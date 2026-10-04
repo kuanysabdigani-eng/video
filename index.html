@@ -1,0 +1,586 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelsForge AI — Генератор вирусных видео с микрофоном</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,900;1,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-impact { font-family: 'Montserrat', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-rose-500 selection:text-white">
+
+    <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-purple-600 to-indigo-500 flex items-center justify-center font-bold text-xl shadow-lg shadow-rose-500/20">🎙</div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-bold text-base tracking-tight text-white">ReelsForge <span class="text-rose-500">AI</span></h1>
+                    <span class="text-[10px] bg-rose-500/20 text-rose-300 font-semibold px-2 py-0.5 rounded-full border border-rose-500/30">Audio Fix v2</span>
+                </div>
+                <p class="text-xs text-slate-400">Запись микрофона &middot; Аудиороутинг AudioContext</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="openDeployModal()" class="px-3.5 py-2 bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold rounded-lg border border-slate-700 transition flex items-center gap-2 shadow-sm">
+                <span>🚀</span> <span class="hidden sm:inline">Инструкция Vercel & GitHub</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Notification Toast -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 bg-slate-900 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl shadow-2xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 max-w-sm">
+        <span id="toastIcon" class="text-rose-500 font-bold text-lg">ℹ️</span>
+        <span id="toastText" class="text-xs font-medium leading-relaxed">Уведомление</span>
+    </div>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Controls Column -->
+        <div class="lg:col-span-5 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4 shadow-xl backdrop-blur-sm">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h2 class="font-bold text-sm text-rose-400 flex items-center gap-2 uppercase tracking-wider">
+                    <span>⚡</span> 1. Сценарий & AI Хуки
+                </h2>
+                <span class="text-[11px] text-slate-400">Gemini Flash</span>
+            </div>
+
+            <!-- Template Selector -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Шаблон ролика</label>
+                <select id="scriptTemplate" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-rose-500 transition text-slate-200">
+                    <option value="startup">🚀 Путь стартапера / Кейс роста</option>
+                    <option value="shocking">🤯 Шокирующий факт + Разрыв шаблона</option>
+                    <option value="psychology">🧠 Темная психология & Триггеры</option>
+                    <option value="money">💰 Как я заработал / Секреты</option>
+                </select>
+            </div>
+
+            <!-- Custom Topic / Prompt -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Тема видео</label>
+                <div class="flex gap-2">
+                    <input type="text" id="topicInput" placeholder="Например: Как набрать аудиторию..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-rose-500 text-slate-200">
+                    <button onclick="generateScriptWithAI()" id="aiGenBtn" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-xs font-bold rounded-xl transition shadow-md shadow-rose-600/30 whitespace-nowrap flex items-center gap-1.5">
+                        <span>✨</span> AI
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editable Script Lines -->
+            <div class="flex flex-col gap-1.5">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Текст субтитров (по строкам)</label>
+                    <span class="text-[10px] text-slate-500">Смена по таймеру</span>
+                </div>
+                <textarea id="scriptLines" rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs focus:outline-none focus:border-rose-500 font-mono leading-relaxed text-slate-200 resize-none">99% людей делают эту ошибку в Reels...
+Из-за этого алгоритмы тебя не замечают!
+Но есть один скрытый трюк...
+Который взрывает охваты х 10!
+Наговаривай голос и записывай тренд!</textarea>
+            </div>
+
+            <div class="border-t border-slate-800 pt-4 flex flex-col gap-4">
+                <h2 class="font-bold text-sm text-indigo-400 flex items-center gap-2 uppercase tracking-wider">
+                    <span>🎙️</span> 2. Аудио и Озвучка
+                </h2>
+
+                <!-- Microphone Toggle Checkbox -->
+                <div class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-xl p-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-base">🎙️</span>
+                        <div>
+                            <p class="text-xs font-semibold text-slate-200">Записывать голос с микрофона</p>
+                            <p class="text-[10px] text-slate-400">Требуется разрешение браузера</p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="recordMicCheckbox" checked class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600"></div>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Фон</label>
+                        <select id="bgEffect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
+                            <option value="matrix">Matrix Cyber Rain</option>
+                            <option value="neon">Neon Glitch Pulse</option>
+                            <option value="waves">Sunset Waves</option>
+                            <option value="deepspace">Deep Space Stars</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Стиль текста</label>
+                        <select id="animStyle" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
+                            <option value="hormozi">Alex Hormozi Pop</option>
+                            <option value="bounce">Bounce Kinetic</option>
+                            <option value="typewriter">Cyber Typewriter</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Цвет акцента</label>
+                        <input type="color" id="accentColor" value="#f43f5e" class="w-full h-9 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer p-1">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Скорость (сек)</label>
+                        <select id="speedSelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
+                            <option value="2.5">2.5 сек</option>
+                            <option value="3.5" selected>3.5 сек</option>
+                            <option value="5.0">5.0 сек</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-2.5 pt-2">
+                <button onclick="togglePlayPreview()" id="playBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl transition shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 text-sm">
+                    <span>▶️</span> Запустить превью
+                </button>
+                <button onclick="startVideoRecording()" id="recBtn" class="w-full py-3 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600 hover:opacity-95 font-bold rounded-xl transition shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 text-sm">
+                    <span>🔴</span> Записать видео со звуком микрофона
+                </button>
+            </div>
+        </div>
+
+        <div class="lg:col-span-7 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 flex flex-col items-center justify-center relative shadow-xl backdrop-blur-sm min-h-[580px]">
+            <div class="w-full flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 animate-ping"></span>
+                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Vertical 9:16 Canvas (Microphone Routing)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] bg-slate-800 px-2.5 py-1 rounded-md text-slate-400 font-mono">1080 x 1920 @ 60FPS</span>
+                </div>
+            </div>
+
+            <!-- Phone Mockup Container -->
+            <div class="relative w-full max-w-[340px] aspect-[9/16] bg-black rounded-3xl overflow-hidden border-4 border-slate-800 shadow-2xl flex items-center justify-center group">
+                <canvas id="previewCanvas" width="1080" height="1920" class="w-full h-full object-cover"></canvas>
+
+                <!-- Recording overlay -->
+                <div id="recOverlay" class="absolute top-4 right-4 bg-red-600/95 text-white text-[11px] font-extrabold px-3 py-1 rounded-full hidden items-center gap-1.5 shadow-xl animate-pulse z-20">
+                    <span class="w-2 h-2 rounded-full bg-white"></span> <span id="recTimer">REC 00:00</span>
+                </div>
+
+                <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10 opacity-80">
+                    <div class="flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-rose-500/80 flex items-center justify-center text-xs font-bold text-white shadow">🎙️</div>
+                        <span class="text-xs font-bold text-white drop-shadow">@reelsforge_ai</span>
+                    </div>
+                    <div class="text-[10px] bg-black/50 backdrop-blur px-2 py-1 rounded text-slate-300 font-semibold border border-white/10">
+                        #voice #shorts
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 w-full bg-slate-950/60 border border-slate-800/60 rounded-xl p-3 flex items-center justify-between text-xs text-slate-400">
+                <span class="flex items-center gap-1.5">🎙️ <b>Совет:</b> Если микрофон не срабатывает, убедитесь, что сайт открыт через localhost/HTTPS, а не напрямую через file:// двойным кликом.</span>
+            </div>
+        </div>
+    </main>
+
+    <div id="deployModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 flex flex-col gap-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-rose-400 flex items-center gap-2"><span>🚀</span> Публикация на GitHub и Vercel</h3>
+                <button onclick="closeDeployModal()" class="text-slate-400 hover:text-white text-sm font-bold">&times;</button>
+            </div>
+            <ol class="list-decimal list-inside text-xs text-slate-300 space-y-2.5 leading-relaxed">
+                <li>Сохраните код как <code class="bg-slate-950 px-2 py-0.5 rounded text-rose-300 font-mono">index.html</code>.</li>
+                <li>Загрузите файл в новый репозиторий на <a href="https://github.com" target="_blank" class="text-rose-400 underline">GitHub</a>.</li>
+                <li>Импортируйте проект на <a href="https://vercel.com" target="_blank" class="text-rose-400 underline">Vercel</a> и нажмите **Deploy**.</li>
+            </ol>
+            <div class="pt-2">
+                <button onclick="closeDeployModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 font-bold rounded-xl transition text-xs text-slate-200">
+                    Понятно, закрыть
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('previewCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let isPlaying = true;
+        let animationFrameId;
+        let frameCount = 0;
+        let currentLineIndex = 0;
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+        let recStartTime = 0;
+        let recTimerInterval;
+        let micStream = null;
+        let audioCtx = null;
+
+        const particles = [];
+        for (let i = 0; i < 40; i++) {
+            particles.push({
+                x: Math.random() * 1080,
+                y: Math.random() * 1920,
+                size: Math.random() * 4 + 1,
+                speedY: Math.random() * 3 + 1,
+                opacity: Math.random() * 0.7 + 0.3
+            });
+        }
+
+        function showNotification(text, isError = false) {
+            const toast = document.getElementById('toastNotification');
+            const toastText = document.getElementById('toastText');
+            const toastIcon = document.getElementById('toastIcon');
+            toastText.textContent = text;
+            toastIcon.textContent = isError ? '❌' : '✨';
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 4000);
+        }
+
+        // Protocol check on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.location.protocol === 'file:') {
+                showNotification('Внимание: запуск через file:// может блокировать доступ к микрофону в некоторых браузерах. Рекомендуем использовать локальный сервер (например, Live Server в VS Code).', true);
+            }
+        });
+
+        async function generateScriptWithAI() {
+            const topic = document.getElementById('topicInput').value.trim() || "Как набрать 100 000 подписчиков";
+            const template = document.getElementById('scriptTemplate').value;
+            const btn = document.getElementById('aiGenBtn');
+
+            btn.innerHTML = '<span>⏳</span>';
+            btn.disabled = true;
+
+            const systemPrompt = "Ты топ-эксперт по вирусным Reels и TikTok. Пиши короткие, цепляющие хуки и сценарии (5-6 строк) на русском языке.";
+            const userQuery = `Создай вирусный сценарий в 5-6 коротких строк на тему: "${topic}". Шаблон: ${template}. Выдай только текст сценария по порядку.`;
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent`;
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                let response;
+                let delay = 1000;
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) break;
+                    } catch (e) {
+                        if (attempt === 2) throw e;
+                    }
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    document.getElementById('scriptLines').value = candidate.content.parts[0].text.trim();
+                    showNotification('Сценарий успешно сгенерирован!');
+                } else {
+                    showNotification('Не удалось получить ответ от AI.', true);
+                }
+            } catch (err) {
+                console.error(err);
+                showNotification('Ошибка запроса к Gemini API.', true);
+            } finally {
+                btn.innerHTML = '<span>✨</span> AI';
+                btn.disabled = false;
+            }
+        }
+
+        function drawCanvas() {
+            const effect = document.getElementById('bgEffect').value;
+            const animStyle = document.getElementById('animStyle').value;
+            const accentColor = document.getElementById('accentColor').value;
+            const speedSec = parseFloat(document.getElementById('speedSelect').value) || 3.5;
+            const scriptText = document.getElementById('scriptLines').value.trim();
+            const lines = scriptText.split('\n').filter(l => l.trim() !== '');
+
+            if (lines.length === 0) lines.push("Текст не задан");
+
+            const framesPerLine = Math.floor(60 * speedSec);
+            if (frameCount % framesPerLine === 0) {
+                currentLineIndex = (currentLineIndex + 1) % lines.length;
+            }
+
+            renderBackground(effect);
+            renderCaptions(lines[currentLineIndex], animStyle, accentColor, framesPerLine, frameCount % framesPerLine);
+
+            frameCount++;
+            if (isPlaying) {
+                animationFrameId = requestAnimationFrame(drawCanvas);
+            }
+        }
+
+        function renderBackground(effect) {
+            if (effect === 'matrix') {
+                ctx.fillStyle = 'rgba(3, 7, 18, 0.25)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#10b981';
+                ctx.font = '28px monospace';
+                particles.forEach(p => {
+                    p.y += p.speedY * 3;
+                    if (p.y > canvas.height) p.y = 0;
+                    const char = String.fromCharCode(0x30A0 + Math.random() * 96);
+                    ctx.globalAlpha = p.opacity;
+                    ctx.fillText(char, p.x, p.y);
+                });
+                ctx.globalAlpha = 1.0;
+            } else if (effect === 'neon') {
+                const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                gradient.addColorStop(0, '#0f051d');
+                gradient.addColorStop(0.5, '#1e1b4b');
+                gradient.addColorStop(1, '#020617');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.save();
+                ctx.filter = 'blur(80px)';
+                ctx.fillStyle = 'rgba(244, 63, 94, 0.25)';
+                ctx.beginPath();
+                ctx.arc(540 + Math.sin(frameCount * 0.02) * 200, 960 + Math.cos(frameCount * 0.02) * 200, 400, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            } else if (effect === 'waves') {
+                const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#1e1b4b');
+                gradient.addColorStop(0.5, '#31103c');
+                gradient.addColorStop(1, '#030712');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.save();
+                ctx.strokeStyle = 'rgba(236, 72, 153, 0.3)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                for (let x = 0; x < canvas.width; x += 20) {
+                    const y = 960 + Math.sin(x * 0.005 + frameCount * 0.03) * 150 + Math.cos(x * 0.01 + frameCount * 0.02) * 80;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ffffff';
+                particles.forEach(p => {
+                    ctx.globalAlpha = p.opacity * (0.5 + Math.sin(frameCount * 0.05 + p.x) * 0.5);
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function renderCaptions(lineText, style, accentColor, totalFrames, currentFrame) {
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const words = lineText.split(' ');
+            const progress = currentFrame / totalFrames;
+
+            if (style === 'hormozi') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.roundRect(100, canvas.height / 2 - 180, 880, 360, 32);
+                ctx.fill();
+
+                const activeWordIndex = Math.floor(progress * words.length);
+                const activeWord = words[activeWordIndex] || words[0];
+
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.shadowBlur = 20;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '900 78px "Montserrat", sans-serif';
+                ctx.fillText(lineText, 540, canvas.height / 2 - 30);
+
+                ctx.fillStyle = accentColor;
+                ctx.font = '900 92px "Montserrat", sans-serif';
+                ctx.shadowColor = accentColor;
+                ctx.shadowBlur = 30;
+                ctx.fillText(activeWord, 540, canvas.height / 2 + 65);
+
+            } else if (style === 'bounce') {
+                const scale = 1 + Math.sin(progress * Math.PI) * 0.08;
+                ctx.translate(540, 960);
+                ctx.scale(scale, scale);
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.roundRect(-450, -150, 900, 300, 24);
+                ctx.fill();
+
+                ctx.fillStyle = accentColor;
+                ctx.font = '800 68px "Montserrat", sans-serif';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                ctx.shadowBlur = 15;
+                ctx.fillText(lineText, 0, -10);
+            } else {
+                const charCount = Math.floor(progress * lineText.length);
+                const subText = lineText.substring(0, charCount);
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.roundRect(-460, -140, 920, 280, 20);
+                ctx.translate(540, 960);
+
+                ctx.fillStyle = '#00ffcc';
+                ctx.font = '700 64px monospace';
+                ctx.shadowColor = '#00ffcc';
+                ctx.shadowBlur = 25;
+                ctx.fillText(subText + '_', 0, 0);
+            }
+
+            ctx.restore();
+        }
+
+        function togglePlayPreview() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+            if (isPlaying) {
+                btn.innerHTML = '<span>⏸️</span> Остановить превью';
+                drawCanvas();
+            } else {
+                btn.innerHTML = '<span>▶️</span> Запустить превью';
+                cancelAnimationFrame(animationFrameId);
+            }
+        }
+
+        // Robust Recording with AudioContext routing
+        async function startVideoRecording() {
+            if (isRecording) return;
+            recordedChunks = [];
+
+            const recordMic = document.getElementById('recordMicCheckbox').checked;
+            const canvasStream = canvas.captureStream(60);
+            let combinedStream = canvasStream;
+
+            if (recordMic) {
+                try {
+                    micStream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: { echoCancellation: true, noiseSuppression: true }, 
+                        video: false 
+                    });
+
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') {
+                        await audioCtx.resume();
+                    }
+
+                    const source = audioCtx.createMediaStreamSource(micStream);
+                    const destination = audioCtx.createMediaStreamDestination();
+                    source.connect(destination);
+
+                    // Combine canvas video track + routed audio track
+                    combinedStream = new MediaStream([
+                        ...canvasStream.getVideoTracks(),
+                        ...destination.stream.getAudioTracks()
+                    ]);
+                } catch (err) {
+                    console.error('Microphone access error:', err);
+                    showNotification('Не удалось получить доступ к микрофону. Проверьте разрешения в браузере.', true);
+                    return;
+                }
+            }
+
+            let options = { mimeType: 'video/webm;codecs=vp9,opus' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options = { mimeType: 'video/webm' };
+            }
+
+            try {
+                mediaRecorder = new MediaRecorder(combinedStream, options);
+            } catch (e) {
+                console.error('MediaRecorder error:', e);
+                showNotification('MediaRecorder не поддерживается в этом браузере.', true);
+                return;
+            }
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                if (micStream) {
+                    micStream.getTracks().forEach(track => track.stop());
+                    micStream = null;
+                }
+                if (audioCtx && audioCtx.state !== 'closed') {
+                    audioCtx.close();
+                    audioCtx = null;
+                }
+
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'reelsforge-voice-video.webm';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                document.getElementById('recOverlay').classList.add('hidden');
+                document.getElementById('recBtn').disabled = false;
+                document.getElementById('recBtn').innerHTML = '<span>🔴</span> Записать видео со звуком микрофона';
+                isRecording = false;
+                clearInterval(recTimerInterval);
+                showNotification('Видео со звуком успешно записано и скачано!');
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            recStartTime = Date.now();
+            document.getElementById('recOverlay').classList.remove('hidden');
+            document.getElementById('recBtn').disabled = true;
+            document.getElementById('recBtn').textContent = 'Запись голоса и видео (6 сек)...';
+
+            let seconds = 0;
+            recTimerInterval = setInterval(() => {
+                seconds++;
+                const secs = String(seconds % 60).padStart(2, '0');
+                document.getElementById('recTimer').textContent = `REC 00:${secs}`;
+            }, 1000);
+
+            setTimeout(() => {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+            }, 6000);
+        }
+
+        function openDeployModal() { document.getElementById('deployModal').classList.remove('hidden'); }
+        function closeDeployModal() { document.getElementById('deployModal').classList.add('hidden'); }
+
+        window.onload = function() {
+            drawCanvas();
+        };
+    </script>
+</body>
+</html>
+```
