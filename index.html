@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReelsForge AI — Мобильная версия</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col p-3 selection:bg-rose-500">
+
+    <!-- Header -->
+    <header class="bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-2.5 mb-3 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-600 to-indigo-500 flex items-center justify-center font-bold text-sm shadow">🎙</div>
+            <div>
+                <h1 class="font-bold text-sm text-white">ReelsForge <span class="text-rose-500">AI</span></h1>
+                <p class="text-[10px] text-slate-400">Быстрая запись в 1 клик</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-4 right-4 bg-slate-900 border border-slate-700 text-slate-200 px-3 py-2 rounded
